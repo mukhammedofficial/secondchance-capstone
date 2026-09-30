@@ -39,7 +39,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test "$(mongosh "$MONGODB_URI/$MONGODB_DB" --quiet --eval 'db.items.countDocuments({})')" = "16"
+          node -e 'const { MongoClient } = require("mongodb"); (async () => { const c = new MongoClient(process.env.MONGODB_URI); await c.connect(); const n = await c.db(process.env.MONGODB_DB).collection("items").countDocuments({}); await c.close(); if (n !== 16) process.exit(1); console.log("MongoDB items count: " + n); })().catch(e => { console.error(e); process.exit(1); });'
           npm start > /tmp/secondchance-server.log 2>&1 &
           SERVER_PID=$!
           trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
