@@ -1,0 +1,5 @@
+# GitHub Actions evidence
+
+Workflow: `.github/workflows/cicd.yml` (workflow name: CICD).
+
+Actual run: **PENDING — after pushing, open GitHub Actions, select the latest run for `main`, and paste its URL and successful job result here.** This file does not claim an Actions run has succeeded.

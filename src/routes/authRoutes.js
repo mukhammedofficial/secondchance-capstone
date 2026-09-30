@@ -1,45 +1,83 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { User } = require('../models');
+const { ObjectId } = require('mongodb');
+const { connectToDatabase } = require('../db');
+
 const router = express.Router();
-const secret = () => process.env.JWT_SECRET || 'development-only-secret-change-me';
+const jwtSecret = () => {
+  if (process.env.JWT_SECRET) return process.env.JWT_SECRET;
+  if (process.env.NODE_ENV === 'production') throw new Error('JWT_SECRET is required in production');
+  return 'local-development-only-secret';
+};
+const publicUser = user => {
+  const { passwordHash, ...safeUser } = user;
+  return safeUser;
+};
+
+// POST /api/secondchance/auth/register
 router.post('/register', async (req, res, next) => {
   try {
     const { name, email, password } = req.body || {};
-    if (!name || !email || !password || String(password).length < 8) return res.status(400).json({ error: 'name, email, and password (at least 8 characters) are required' });
+    if (!name || !email || !password || String(password).length < 8) {
+      return res.status(400).json({ error: 'name, email, and password (at least 8 characters) are required' });
+    }
+    const db = await connectToDatabase();
     const normalizedEmail = String(email).toLowerCase().trim();
-    if (await User.findOne({ email: normalizedEmail })) return res.status(409).json({ error: 'Email already registered' });
-    const user = await User.create({ name, email: normalizedEmail, passwordHash: await bcrypt.hash(password, 12) });
-    res.status(201).json({ id: user.id, name: user.name, email: user.email });
-  } catch (error) { next(error); }
+    const existing = await db.collection('users').findOne({ email: normalizedEmail });
+    if (existing) return res.status(409).json({ error: 'User already exists' });
+    const now = new Date();
+    const user = { name: String(name).trim(), email: normalizedEmail, passwordHash: await bcrypt.hash(password, 12), createdAt: now, updatedAt: now };
+    const result = await db.collection('users').insertOne(user);
+    res.status(201).json({ message: 'User registered successfully', user: publicUser({ ...user, _id: result.insertedId }) });
+  } catch (error) {
+    if (error.code === 11000) return res.status(409).json({ error: 'User already exists' });
+    next(error);
+  }
 });
+
+// POST /api/secondchance/auth/login
 router.post('/login', async (req, res, next) => {
   try {
     const { email, password } = req.body || {};
-    const user = email && await User.findOne({ email: String(email).toLowerCase().trim() });
-    if (!user || !await bcrypt.compare(password || '', user.passwordHash)) return res.status(401).json({ error: 'Invalid email or password' });
-    res.json({ token: jwt.sign({ sub: user.id }, secret(), { expiresIn: '1d' }), user: { id: user.id, name: user.name, email: user.email } });
+    if (!email || !password) return res.status(400).json({ error: 'email and password are required' });
+    const db = await connectToDatabase();
+    const user = await db.collection('users').findOne({ email: String(email).toLowerCase().trim() });
+    if (!user || !(await bcrypt.compare(password, user.passwordHash))) return res.status(401).json({ error: 'Invalid email or password' });
+    const token = jwt.sign({ userId: user._id.toString(), email: user.email }, jwtSecret(), { expiresIn: '2h' });
+    res.json({ message: 'Login successful', token, user: publicUser(user) });
   } catch (error) { next(error); }
 });
-async function updateProfile(req, res, next) {
+
+async function updateUser(req, res, next) {
   try {
     const header = req.get('authorization') || '';
     if (!header.startsWith('Bearer ')) return res.status(401).json({ error: 'Bearer token required' });
-    const payload = jwt.verify(header.slice(7), secret());
-    if (req.params.id && req.params.id !== payload.sub) return res.status(403).json({ error: 'You can only update your own account' });
-    const changes = {};
-    if (req.body.name) changes.name = req.body.name;
-    if (req.body.email) changes.email = String(req.body.email).toLowerCase().trim();
+    const payload = jwt.verify(header.slice(7), jwtSecret());
+    const targetId = req.params.id || payload.userId;
+    if (!ObjectId.isValid(targetId) || targetId !== payload.userId) return res.status(403).json({ error: 'You can only update your own account' });
+    const updates = {};
+    if (req.body.name) updates.name = String(req.body.name).trim();
+    if (req.body.email) updates.email = String(req.body.email).toLowerCase().trim();
     if (req.body.password) {
       if (String(req.body.password).length < 8) return res.status(400).json({ error: 'Password must be at least 8 characters' });
-      changes.passwordHash = await bcrypt.hash(req.body.password, 12);
+      updates.passwordHash = await bcrypt.hash(req.body.password, 12);
     }
-    const user = await User.findByIdAndUpdate(payload.sub, changes, { new: true, runValidators: true });
+    updates.updatedAt = new Date();
+    const db = await connectToDatabase();
+    const updated = await db.collection('users').findOneAndUpdate(
+      { _id: new ObjectId(targetId) }, { $set: updates }, { returnDocument: 'after' }
+    );
+    const user = updated?.value === undefined ? updated : updated.value;
     if (!user) return res.status(404).json({ error: 'User not found' });
-    res.json({ id: user.id, name: user.name, email: user.email });
-  } catch (error) { if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') return res.status(401).json({ error: 'Invalid or expired token' }); next(error); }
+    res.json({ message: 'User updated successfully', user: publicUser(user) });
+  } catch (error) {
+    if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') return res.status(401).json({ error: 'Invalid or expired token' });
+    if (error.code === 11000) return res.status(409).json({ error: 'Email already registered' });
+    next(error);
+  }
 }
-router.patch('/update', updateProfile);
-router.put('/users/:id', updateProfile);
+// Update routes are explicit for course rubric compatibility; both require ownership proof.
+router.put('/users/:id', updateUser);
+router.patch('/update', updateUser);
 module.exports = router;

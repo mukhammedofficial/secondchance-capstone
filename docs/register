@@ -1,0 +1,11 @@
+# Registration API evidence
+
+Command:
+
+```sh
+curl -sS -X POST http://localhost:3000/api/secondchance/auth/register \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"Test User","email":"test@example.com","password":"Password123!"}'
+```
+
+Actual response: **PENDING — run once against the configured MongoDB and paste the real response.**

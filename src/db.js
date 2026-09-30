@@ -1,13 +1,24 @@
-const mongoose = require('mongoose');
+const { MongoClient } = require('mongodb');
 
-async function connectToDatabase(uri = process.env.MONGODB_URI) {
-  if (!uri) throw new Error('MONGODB_URI is required');
-  await mongoose.connect(uri);
-  return mongoose.connection;
+let client;
+let db;
+
+async function connectToDatabase() {
+  if (db) return db;
+  const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017';
+  const dbName = process.env.MONGODB_DB || 'secondchance';
+  client = new MongoClient(uri);
+  await client.connect();
+  const connectedDb = client.db(dbName);
+  await connectedDb.collection('users').createIndex({ email: 1 }, { unique: true });
+  db = connectedDb;
+  return db;
 }
 
-async function disconnectFromDatabase() {
-  if (mongoose.connection.readyState !== 0) await mongoose.disconnect();
+async function closeDatabase() {
+  if (client) await client.close();
+  client = undefined;
+  db = undefined;
 }
 
-module.exports = { connectToDatabase, disconnectFromDatabase };
+module.exports = { client: () => client, connectToDatabase, closeDatabase };

@@ -1,0 +1,11 @@
+# Main page / all-items API evidence
+
+Capture this after MongoDB is running and `npm run seed` has printed its actual inserted count.
+
+Command (replace the URL with the real deployed URL when available):
+
+```sh
+curl -sS http://localhost:3000/api/secondchance/items
+```
+
+Actual response: **PENDING — paste the complete real response here.** No API response is claimed until collected from the running service.

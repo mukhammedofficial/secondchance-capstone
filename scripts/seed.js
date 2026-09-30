@@ -1,30 +1,42 @@
 require('dotenv').config();
-const { connectToDatabase, disconnectFromDatabase } = require('../src/db');
-const { Item } = require('../src/models');
+const { connectToDatabase, closeDatabase } = require('../src/db');
 const items = [
- ['Desk lamp','Adjustable LED desk lamp with warm and cool settings','Home','good',8],
- ['Winter coat','Warm navy winter coat, size M','Clothing','good',18],
- ['JavaScript handbook','Used programming reference book with clean pages','Books','like-new',10],
- ['Acoustic guitar','Full-size acoustic guitar, recently restrung','Music','fair',45],
- ['Ceramic dinner set','Six plates and six bowls, no chips','Home','good',22],
- ['Mountain bike','Adult mountain bike with working brakes','Sports','good',85],
- ['Plant pots','Set of four terracotta pots','Garden','like-new',7],
- ['Kids building blocks','Large mixed set of wooden blocks','Toys','good',12],
- ['Coffee table','Solid wood coffee table with minor marks','Furniture','fair',30],
- ['Digital camera','Compact point-and-shoot camera with charger','Electronics','good',55],
- ['Yoga mat','Non-slip exercise mat, lightly used','Sports','like-new',9],
- ['Cookware set','Three stainless steel pans','Kitchen','good',20],
- ['Board game','Complete family strategy board game','Toys','like-new',14],
- ['Backpack','Water-resistant 25 litre day backpack','Clothing','good',16],
- ['Floor fan','Quiet three-speed floor fan','Home','good',17],
- ['Watercolour set','Paints, brushes, and paper for beginners','Arts','new',11]
-].map(([title, description, category, condition, price]) => ({ title, description, category, condition, price, location: 'Local pickup' }));
+  { title: 'Wooden Chair', description: 'Solid wooden chair in good condition.', category: 'Furniture', location: 'Tashkent', condition: 'Good' },
+  { title: 'Desk Lamp', description: 'Working adjustable desk lamp.', category: 'Electronics', location: 'Tashkent', condition: 'Good' },
+  { title: 'Coffee Table', description: 'Small coffee table.', category: 'Furniture', location: 'Samarkand', condition: 'Used' },
+  { title: 'Bookshelf', description: 'Five-shelf wooden bookcase.', category: 'Furniture', location: 'Tashkent', condition: 'Good' },
+  { title: 'Kitchen Plates', description: 'Set of reusable plates.', category: 'Kitchen', location: 'Tashkent', condition: 'Good' },
+  { title: 'Electric Kettle', description: 'Working electric kettle.', category: 'Kitchen', location: 'Bukhara', condition: 'Good' },
+  { title: 'Backpack', description: 'Everyday backpack.', category: 'Clothing', location: 'Tashkent', condition: 'Used' },
+  { title: 'Winter Jacket', description: 'Warm winter jacket.', category: 'Clothing', location: 'Samarkand', condition: 'Good' },
+  { title: 'Monitor Stand', description: 'Adjustable monitor stand.', category: 'Electronics', location: 'Tashkent', condition: 'Good' },
+  { title: 'Floor Rug', description: 'Medium-size rug.', category: 'Home', location: 'Bukhara', condition: 'Used' },
+  { title: 'Plant Pot', description: 'Ceramic plant pot.', category: 'Home', location: 'Tashkent', condition: 'Good' },
+  { title: 'Camping Tent', description: 'Two-person camping tent.', category: 'Outdoor', location: 'Samarkand', condition: 'Used' },
+  { title: 'Children Books', description: "Collection of children's books.", category: 'Books', location: 'Tashkent', condition: 'Good' },
+  { title: 'Office Keyboard', description: 'USB keyboard.', category: 'Electronics', location: 'Tashkent', condition: 'Good' },
+  { title: 'Storage Box', description: 'Plastic storage box.', category: 'Home', location: 'Bukhara', condition: 'Good' },
+  { title: 'Bicycle Helmet', description: 'Adult bicycle helmet.', category: 'Outdoor', location: 'Tashkent', condition: 'Good' }
+].map(item => ({ ...item, price: 0, createdAt: new Date(), updatedAt: new Date() }));
+
 async function seed() {
+  if (items.length !== 16) throw new Error(`Expected exactly 16 seed items; got ${items.length}`);
   try {
-    await connectToDatabase();
-    const result = await Item.insertMany(items, { ordered: true });
-    console.log(JSON.stringify({ inserted_items: result.length }));
-  } finally { await disconnectFromDatabase(); }
+    const db = await connectToDatabase();
+    const collection = db.collection('items');
+    await collection.deleteMany({});
+    const result = await collection.insertMany(items, { ordered: true });
+    const total = await collection.countDocuments({});
+    if (result.insertedCount !== 16 || total !== 16) throw new Error(`Expected exactly 16 stored items; inserted=${result.insertedCount}, total=${total}`);
+    console.log(`inserted_items: ${result.insertedCount}`);
+    return result.insertedCount;
+  } finally {
+    await closeDatabase();
+  }
 }
-if (require.main === module) seed().catch(error => { console.error(error); process.exitCode = 1; });
+
+if (require.main === module) seed().catch(error => {
+  console.error('Seed failed:', error.message);
+  process.exitCode = 1;
+});
 module.exports = { items, seed };

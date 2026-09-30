@@ -1,20 +1,35 @@
 const express = require('express');
 const natural = require('natural');
-const { Item } = require('../models');
+const { connectToDatabase } = require('../db');
 const router = express.Router();
 const tokenizer = new natural.WordTokenizer();
-router.get('/', async (req, res, next) => {
+const escapeRegex = value => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+async function handle(req, res, next) {
   try {
-    const query = String(req.query.q || '').trim();
-    if (!query) return res.status(400).json({ error: 'Query parameter q is required' });
-    const terms = tokenizer.tokenize(query.toLowerCase()).filter(Boolean);
-    const items = await Item.find(req.query.category ? { category: new RegExp(`^${String(req.query.category).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') } : {});
-    const results = items.map(item => {
-      const text = `${item.title} ${item.description} ${item.category}`.toLowerCase();
-      const score = terms.reduce((n, term) => n + (text.includes(term) ? 1 : 0), 0);
-      return { item, score };
-    }).filter(result => result.score > 0).sort((a, b) => b.score - a.score).map(result => result.item);
-    res.json(results);
+    const { category, q, location } = req.query;
+    if (!category && !q && !location) return res.status(400).json({ error: 'Provide q, category, or location to search' });
+    const db = await connectToDatabase();
+    const filter = {};
+    // Required capstone category filter.
+    if (category) {
+      filter.category = String(category);
+    }
+    if (location) filter.location = { $regex: escapeRegex(String(location)), $options: 'i' };
+    if (q) {
+      const terms = tokenizer.tokenize(String(q).trim()).filter(Boolean).map(escapeRegex);
+      if (terms.length) {
+        filter.$and = terms.map(term => ({ $or: [
+          { title: { $regex: term, $options: 'i' } },
+          { description: { $regex: term, $options: 'i' } }
+        ] }));
+      }
+    }
+    const items = await db.collection('items').find(filter).sort({ createdAt: -1 }).toArray();
+    res.json(items);
   } catch (error) { next(error); }
-});
+}
+
+router.get('/', handle);
+router.handle = handle;
 module.exports = router;

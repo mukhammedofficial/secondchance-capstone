@@ -1,0 +1,11 @@
+# Login API evidence
+
+Command:
+
+```sh
+curl -sS -X POST http://localhost:3000/api/secondchance/auth/login \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"test@example.com","password":"Password123!"}'
+```
+
+Actual response: **PENDING — register the user first, then paste the real response and token from the running service.** No token is fabricated here.

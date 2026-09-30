@@ -1,11 +1,22 @@
 require('dotenv').config();
-const { createApp } = require('./app');
+const natural = require('natural');
+const app = require('./app');
 const { connectToDatabase } = require('./db');
-const port = Number(process.env.PORT || 3000);
-async function start() {
+
+const PORT = Number(process.env.PORT || 3000);
+async function startServer() {
   await connectToDatabase();
-  const server = createApp().listen(port, () => console.log(`SecondChance listening on port ${port}`));
+  const server = app.listen(PORT, () => {
+    console.log(`SecondChance server running on port ${PORT}`);
+    console.log(`Natural version loaded: ${natural.version || 'available'}`);
+  });
   return server;
 }
-if (require.main === module) start().catch(error => { console.error('Startup failed:', error.message); process.exit(1); });
-module.exports = { start };
+
+if (require.main === module) {
+  startServer().catch(error => {
+    console.error('Failed to start SecondChance:', error.message);
+    process.exit(1);
+  });
+}
+module.exports = { startServer };

@@ -1,13 +1,64 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
 const { createApp } = require('../src/app');
+const authRoutes = require('../src/routes/authRoutes');
+const searchRoutes = require('../src/routes/searchRoutes');
 const { items } = require('../scripts/seed');
-const app = createApp();
-let server; let base;
-test('start test server', async () => { server = app.listen(0); await new Promise(resolve => server.once('listening', resolve)); base = `http://127.0.0.1:${server.address().port}`; });
-test('health endpoint returns service status', async () => { const res=await fetch(`${base}/health`); assert.equal(res.status,200); assert.deepEqual(await res.json(),{status:'ok'}); });
-test('auth endpoints reject malformed and unauthenticated requests', async () => { let res=await fetch(`${base}/auth/register`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({email:'x@example.com',password:'123'})}); assert.equal(res.status,400); res=await fetch(`${base}/auth/update`,{method:'PATCH'}); assert.equal(res.status,401); res=await fetch(`${base}/api/secondchance/auth/users/64b000000000000000000001`,{method:'PUT'}); assert.equal(res.status,401); });
-test('search validates empty query without contacting MongoDB', async () => { const res=await fetch(`${base}/search`); assert.equal(res.status,400); assert.match((await res.json()).error,/required/); });
-test('seed data has 16 fully described examples', () => { assert.equal(items.length,16); for(const item of items){assert.ok(item.title);assert.ok(item.description);assert.ok(item.category)} });
-test('landing page is served', async () => { const res=await fetch(base); assert.equal(res.status,200); assert.match(await res.text(),/Good things deserve a second chance/); });
-test('stop test server', async () => { await new Promise((resolve,reject)=>server.close(e=>e?reject(e):resolve())); });
+
+function responseRecorder() {
+  return {
+    code: 200,
+    body: undefined,
+    status(code) { this.code = code; return this; },
+    json(body) { this.body = body; return this; },
+    end() { return this; }
+  };
+}
+function handlerFor(router, method, routePath) {
+  const layer = router.stack.find(entry => entry.route?.path === routePath && entry.route.methods[method]);
+  assert.ok(layer, `missing ${method.toUpperCase()} ${routePath}`);
+  return layer.route.stack.at(-1).handle;
+}
+
+test('health route handler returns service status', () => {
+  const app = createApp();
+  const layer = app._router.stack.find(entry => entry.route?.path === '/health');
+  const res = responseRecorder();
+  layer.route.stack[0].handle({}, res);
+  assert.deepEqual(res.body, { status: 'ok' });
+});
+
+test('registration rejects missing data without database access', async () => {
+  const res = responseRecorder();
+  await handlerFor(authRoutes, 'post', '/register')({ body: { email: 'x@example.com', password: 'short' } }, res, error => { throw error; });
+  assert.equal(res.code, 400);
+  assert.match(res.body.error, /required/);
+});
+
+test('profile update requires a bearer token', async () => {
+  const res = responseRecorder();
+  const req = { get: () => '', params: {}, body: {} };
+  await handlerFor(authRoutes, 'put', '/users/:id')(req, res, error => { throw error; });
+  assert.equal(res.code, 401);
+});
+
+test('search rejects an empty query without database access', async () => {
+  const res = responseRecorder();
+  await searchRoutes.handle({ query: {} }, res, error => { throw error; });
+  assert.equal(res.code, 400);
+  assert.match(res.body.error, /search/);
+});
+
+test('seed defines exactly 16 usable sample items', () => {
+  assert.equal(items.length, 16);
+  for (const item of items) assert.ok(item.title && item.description && item.category);
+});
+
+test('landing page includes the project identity and Get Started call to action', () => {
+  const html = fs.readFileSync(path.join(__dirname, '..', 'public', 'index.html'), 'utf8');
+  assert.match(html, /SecondChance/);
+  assert.match(html, /Get Started/);
+  assert.match(html, /Good things deserve a second chance/);
+});

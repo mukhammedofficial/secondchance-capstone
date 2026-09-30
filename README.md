@@ -1,6 +1,6 @@
 # SecondChance
 
-A JavaScript back-end capstone marketplace for community reuse. The Express service stores listings and accounts in MongoDB, supports listing CRUD, category filters, text search with `natural`, image uploads, registration/login/profile updates, and serves a small landing page.
+A JavaScript back-end capstone marketplace for community reuse. The Express service stores listings and accounts in MongoDB through the official MongoDB Node.js driver, supports listing CRUD, category filters, text search with `natural`, image uploads, registration/login/profile updates, and serves a small landing page.
 
 ## Run locally
 

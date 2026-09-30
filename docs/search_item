@@ -1,0 +1,9 @@
+# Search API evidence
+
+Command:
+
+```sh
+curl -sS 'http://localhost:3000/api/secondchance/search?category=Electronics'
+```
+
+Actual response: **PENDING — run against the seeded MongoDB and paste the matching real records.**

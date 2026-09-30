@@ -1,0 +1,9 @@
+# Item detail API evidence
+
+Command (replace `ITEM_ID` with an ID returned by the real seeded collection):
+
+```sh
+curl -sS http://localhost:3000/api/secondchance/items/ITEM_ID
+```
+
+Actual response: **PENDING — capture using a real MongoDB item ID.**
