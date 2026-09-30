@@ -49,7 +49,7 @@ jobs:
           done
           curl -fsS http://localhost:3000/health >/dev/null
           BASE_URL=http://localhost:3000
-          TEST_EMAIL="coursera-\${GITHUB_RUN_ID}-\${GITHUB_RUN_ATTEMPT}@example.invalid"
+          TEST_EMAIL="coursera-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}@example.invalid"
           TEST_PASSWORD="Password123!$(openssl rand -hex 8)"
           echo "::add-mask::$TEST_PASSWORD"
 
