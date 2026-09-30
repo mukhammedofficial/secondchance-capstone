@@ -35,5 +35,146 @@ jobs:
         run: npm test
       - name: Seed and confirm exactly 16 items
         run: npm run seed
+      - name: Exercise API and capture Task 11–15 evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(mongosh "$MONGODB_URI/$MONGODB_DB" --quiet --eval 'db.items.countDocuments({})')" = "16"
+          npm start > /tmp/secondchance-server.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://localhost:3000/health >/dev/null; then break; fi
+            sleep 1
+          done
+          curl -fsS http://localhost:3000/health >/dev/null
+          BASE_URL=http://localhost:3000
+          TEST_EMAIL="coursera-\${GITHUB_RUN_ID}-\${GITHUB_RUN_ATTEMPT}@example.invalid"
+          TEST_PASSWORD="Password123!$(openssl rand -hex 8)"
+          echo "::add-mask::$TEST_PASSWORD"
+
+          curl -fsS "$BASE_URL/api/secondchance/items" -o /tmp/mainpage.json
+          test "$(jq 'length' /tmp/mainpage.json)" = "16"
+          ITEM_ID=$(jq -r '.[0]._id' /tmp/mainpage.json)
+          test -n "$ITEM_ID"
+          test "$ITEM_ID" != "null"
+
+          curl -fsS -X POST "$BASE_URL/api/secondchance/auth/register" \
+            -H 'Content-Type: application/json' \
+            -d "$(jq -nc --arg name 'Coursera Test User' --arg email "$TEST_EMAIL" --arg password "$TEST_PASSWORD" '{name:$name,email:$email,password:$password}')" \
+            -o /tmp/register.json
+          test "$(jq -r '.message' /tmp/register.json)" = "User registered successfully"
+
+          curl -fsS -X POST "$BASE_URL/api/secondchance/auth/login" \
+            -H 'Content-Type: application/json' \
+            -d "$(jq -nc --arg email "$TEST_EMAIL" --arg password "$TEST_PASSWORD" '{email:$email,password:$password}')" \
+            -o /tmp/login.json
+          test "$(jq -r '.message' /tmp/login.json)" = "Login successful"
+          test -n "$(jq -r '.token' /tmp/login.json)"
+          jq ' .token = "[REDACTED]" ' /tmp/login.json > /tmp/login-redacted.json
+
+          curl -fsS "$BASE_URL/api/secondchance/items/$ITEM_ID" -o /tmp/item-detail.json
+          test "$(jq -r '._id' /tmp/item-detail.json)" = "$ITEM_ID"
+          curl -fsS "$BASE_URL/api/secondchance/search?category=Electronics" -o /tmp/search.json
+          test "$(jq 'length' /tmp/search.json)" -gt "0"
+
+          cat > /tmp/mainpage.md <<'EOF'
+          # Task 11 — Main page items API
+
+          Actual command executed (the URL resolved to the running Actions server):
+
+          ```sh
+          curl -fsS "$BASE_URL/api/secondchance/items"
+          ```
+
+          Actual response:
+
+          ```json
+          EOF
+          jq . /tmp/mainpage.json >> /tmp/mainpage.md
+          printf '\n```\n' >> /tmp/mainpage.md
+
+          cat > /tmp/register.md <<'EOF'
+          # Task 12 — Successful registration
+
+          The request used a unique, temporary email and a generated test-only password. The password value is intentionally not stored.
+
+          Actual cURL request:
+
+          ```sh
+          curl -fsS -X POST "$BASE_URL/api/secondchance/auth/register" \
+            -H 'Content-Type: application/json' \
+            -d "$(jq -nc --arg name 'Coursera Test User' --arg email "$TEST_EMAIL" --arg password "$TEST_PASSWORD" '{name:$name,email:$email,password:$password}')"
+          ```
+
+          Actual response:
+
+          ```json
+          EOF
+          jq . /tmp/register.json >> /tmp/register.md
+          printf '\n```\n' >> /tmp/register.md
+
+          cat > /tmp/login.md <<'EOF'
+          # Task 13 — Successful login
+
+          The request used the same temporary credentials from Task 12. The password and returned JWT are not stored; the actual successful response is shown with only its token redacted.
+
+          Actual cURL request:
+
+          ```sh
+          curl -fsS -X POST "$BASE_URL/api/secondchance/auth/login" \
+            -H 'Content-Type: application/json' \
+            -d "$(jq -nc --arg email "$TEST_EMAIL" --arg password "$TEST_PASSWORD" '{email:$email,password:$password}')"
+          ```
+
+          Actual response (JWT redacted):
+
+          ```json
+          EOF
+          jq . /tmp/login-redacted.json >> /tmp/login.md
+          printf '\n```\n' >> /tmp/login.md
+
+          cat > /tmp/item_detail.md <<EOF
+          # Task 14 — Item detail
+
+          The item ID below was read from the actual mainpage API response for this run.
+
+          Actual cURL request:
+
+          ```sh
+          curl -fsS "$BASE_URL/api/secondchance/items/$ITEM_ID"
+          ```
+
+          Actual response:
+
+          ```json
+          EOF
+          jq . /tmp/item-detail.json >> /tmp/item_detail.md
+          printf '\n```\n' >> /tmp/item_detail.md
+
+          cat > /tmp/search_item.md <<'EOF'
+          # Task 15 — Electronics search
+
+          Actual cURL request:
+
+          ```sh
+          curl -fsS "$BASE_URL/api/secondchance/search?category=Electronics"
+          ```
+
+          Actual response:
+
+          ```json
+          EOF
+          jq . /tmp/search.json >> /tmp/search_item.md
+          printf '\n```\n' >> /tmp/search_item.md
+
+          for evidence in mainpage register login item_detail search_item; do
+            echo "EVIDENCE_BEGIN:$evidence"
+            cat "/tmp/$evidence.md"
+            echo "EVIDENCE_END:$evidence"
+          done
+          echo "API item count: $(jq 'length' /tmp/mainpage.json)"
+          echo "Task 14 item ID: $ITEM_ID"
+          echo "Electronics result count: $(jq 'length' /tmp/search.json)"
       - name: Build Docker image
         run: docker build -t secondchance-capstone .
