@@ -22,11 +22,12 @@ router.post('/login', async (req, res, next) => {
     res.json({ token: jwt.sign({ sub: user.id }, secret(), { expiresIn: '1d' }), user: { id: user.id, name: user.name, email: user.email } });
   } catch (error) { next(error); }
 });
-router.patch('/update', async (req, res, next) => {
+async function updateProfile(req, res, next) {
   try {
     const header = req.get('authorization') || '';
     if (!header.startsWith('Bearer ')) return res.status(401).json({ error: 'Bearer token required' });
     const payload = jwt.verify(header.slice(7), secret());
+    if (req.params.id && req.params.id !== payload.sub) return res.status(403).json({ error: 'You can only update your own account' });
     const changes = {};
     if (req.body.name) changes.name = req.body.name;
     if (req.body.email) changes.email = String(req.body.email).toLowerCase().trim();
@@ -38,5 +39,7 @@ router.patch('/update', async (req, res, next) => {
     if (!user) return res.status(404).json({ error: 'User not found' });
     res.json({ id: user.id, name: user.name, email: user.email });
   } catch (error) { if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') return res.status(401).json({ error: 'Invalid or expired token' }); next(error); }
-});
+}
+router.patch('/update', updateProfile);
+router.put('/users/:id', updateProfile);
 module.exports = router;
