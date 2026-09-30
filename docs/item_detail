@@ -1,9 +1,26 @@
-# Item detail API evidence
+# Task 14 — Item detail
 
-Command (replace `ITEM_ID` with an ID returned by the real seeded collection):
+The item ID below was read from the actual mainpage API response for this run.
+
+Actual cURL request:
 
 ```sh
-curl -sS http://localhost:3000/api/secondchance/items/ITEM_ID
+curl -fsS "$BASE_URL/api/secondchance/items/$ITEM_ID"
 ```
 
-Actual response: **PENDING — capture using a real MongoDB item ID.**
+Actual response:
+
+```json
+{
+  "_id": "6abcf92ce18dda36c1f1405d",
+  "title": "Wooden Chair",
+  "description": "Solid wooden chair in good condition.",
+  "category": "Furniture",
+  "location": "Tashkent",
+  "condition": "Good",
+  "price": 0,
+  "createdAt": "2026-09-30T11:57:32.249Z",
+  "updatedAt": "2026-09-30T11:57:32.249Z"
+}
+
+```

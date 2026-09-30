@@ -1,11 +1,28 @@
-# Login API evidence
+# Task 13 — Successful login
 
-Command:
+The request used the same temporary credentials from Task 12. The password and returned JWT are not stored; the actual successful response is shown with only its token redacted.
+
+Actual cURL request:
 
 ```sh
-curl -sS -X POST http://localhost:3000/api/secondchance/auth/login \
+curl -fsS -X POST "$BASE_URL/api/secondchance/auth/login" \
   -H 'Content-Type: application/json' \
-  -d '{"email":"test@example.com","password":"Password123!"}'
+  -d "$(jq -nc --arg email "$TEST_EMAIL" --arg password "$TEST_PASSWORD" '{email:$email,password:$password}')"
 ```
 
-Actual response: **PENDING — register the user first, then paste the real response and token from the running service.** No token is fabricated here.
+Actual response (JWT redacted):
+
+```json
+{
+  "message": "Login successful",
+  "token": "[REDACTED]",
+  "user": {
+    "_id": "6abcf92de163a928de55520c",
+    "name": "Coursera Test User",
+    "email": "coursera-36711659173-1@example.invalid",
+    "createdAt": "2026-09-30T11:57:33.447Z",
+    "updatedAt": "2026-09-30T11:57:33.447Z"
+  }
+}
+
+```

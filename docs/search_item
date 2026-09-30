@@ -1,9 +1,48 @@
-# Search API evidence
+# Task 15 — Electronics search
 
-Command:
+Actual cURL request:
 
 ```sh
-curl -sS 'http://localhost:3000/api/secondchance/search?category=Electronics'
+curl -fsS "$BASE_URL/api/secondchance/search?category=Electronics"
 ```
 
-Actual response: **PENDING — run against the seeded MongoDB and paste the matching real records.**
+Actual response:
+
+```json
+[
+  {
+    "_id": "6abcf92ce18dda36c1f1405e",
+    "title": "Desk Lamp",
+    "description": "Working adjustable desk lamp.",
+    "category": "Electronics",
+    "location": "Tashkent",
+    "condition": "Good",
+    "price": 0,
+    "createdAt": "2026-09-30T11:57:32.249Z",
+    "updatedAt": "2026-09-30T11:57:32.249Z"
+  },
+  {
+    "_id": "6abcf92ce18dda36c1f14065",
+    "title": "Monitor Stand",
+    "description": "Adjustable monitor stand.",
+    "category": "Electronics",
+    "location": "Tashkent",
+    "condition": "Good",
+    "price": 0,
+    "createdAt": "2026-09-30T11:57:32.249Z",
+    "updatedAt": "2026-09-30T11:57:32.249Z"
+  },
+  {
+    "_id": "6abcf92ce18dda36c1f1406a",
+    "title": "Office Keyboard",
+    "description": "USB keyboard.",
+    "category": "Electronics",
+    "location": "Tashkent",
+    "condition": "Good",
+    "price": 0,
+    "createdAt": "2026-09-30T11:57:32.249Z",
+    "updatedAt": "2026-09-30T11:57:32.249Z"
+  }
+]
+
+```

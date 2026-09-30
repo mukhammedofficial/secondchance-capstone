@@ -1,11 +1,191 @@
-# Main page / all-items API evidence
+# Task 11 — Main page items API
 
-Capture this after MongoDB is running and `npm run seed` has printed its actual inserted count.
-
-Command (replace the URL with the real deployed URL when available):
+Actual command executed (the URL resolved to the running Actions server):
 
 ```sh
-curl -sS http://localhost:3000/api/secondchance/items
+curl -fsS "$BASE_URL/api/secondchance/items"
 ```
 
-Actual response: **PENDING — paste the complete real response here.** No API response is claimed until collected from the running service.
+Actual response:
+
+```json
+[
+  {
+    "_id": "6abcf92ce18dda36c1f1405d",
+    "title": "Wooden Chair",
+    "description": "Solid wooden chair in good condition.",
+    "category": "Furniture",
+    "location": "Tashkent",
+    "condition": "Good",
+    "price": 0,
+    "createdAt": "2026-09-30T11:57:32.249Z",
+    "updatedAt": "2026-09-30T11:57:32.249Z"
+  },
+  {
+    "_id": "6abcf92ce18dda36c1f1405e",
+    "title": "Desk Lamp",
+    "description": "Working adjustable desk lamp.",
+    "category": "Electronics",
+    "location": "Tashkent",
+    "condition": "Good",
+    "price": 0,
+    "createdAt": "2026-09-30T11:57:32.249Z",
+    "updatedAt": "2026-09-30T11:57:32.249Z"
+  },
+  {
+    "_id": "6abcf92ce18dda36c1f1405f",
+    "title": "Coffee Table",
+    "description": "Small coffee table.",
+    "category": "Furniture",
+    "location": "Samarkand",
+    "condition": "Used",
+    "price": 0,
+    "createdAt": "2026-09-30T11:57:32.249Z",
+    "updatedAt": "2026-09-30T11:57:32.249Z"
+  },
+  {
+    "_id": "6abcf92ce18dda36c1f14060",
+    "title": "Bookshelf",
+    "description": "Five-shelf wooden bookcase.",
+    "category": "Furniture",
+    "location": "Tashkent",
+    "condition": "Good",
+    "price": 0,
+    "createdAt": "2026-09-30T11:57:32.249Z",
+    "updatedAt": "2026-09-30T11:57:32.249Z"
+  },
+  {
+    "_id": "6abcf92ce18dda36c1f14061",
+    "title": "Kitchen Plates",
+    "description": "Set of reusable plates.",
+    "category": "Kitchen",
+    "location": "Tashkent",
+    "condition": "Good",
+    "price": 0,
+    "createdAt": "2026-09-30T11:57:32.249Z",
+    "updatedAt": "2026-09-30T11:57:32.249Z"
+  },
+  {
+    "_id": "6abcf92ce18dda36c1f14062",
+    "title": "Electric Kettle",
+    "description": "Working electric kettle.",
+    "category": "Kitchen",
+    "location": "Bukhara",
+    "condition": "Good",
+    "price": 0,
+    "createdAt": "2026-09-30T11:57:32.249Z",
+    "updatedAt": "2026-09-30T11:57:32.249Z"
+  },
+  {
+    "_id": "6abcf92ce18dda36c1f14063",
+    "title": "Backpack",
+    "description": "Everyday backpack.",
+    "category": "Clothing",
+    "location": "Tashkent",
+    "condition": "Used",
+    "price": 0,
+    "createdAt": "2026-09-30T11:57:32.249Z",
+    "updatedAt": "2026-09-30T11:57:32.249Z"
+  },
+  {
+    "_id": "6abcf92ce18dda36c1f14064",
+    "title": "Winter Jacket",
+    "description": "Warm winter jacket.",
+    "category": "Clothing",
+    "location": "Samarkand",
+    "condition": "Good",
+    "price": 0,
+    "createdAt": "2026-09-30T11:57:32.249Z",
+    "updatedAt": "2026-09-30T11:57:32.249Z"
+  },
+  {
+    "_id": "6abcf92ce18dda36c1f14065",
+    "title": "Monitor Stand",
+    "description": "Adjustable monitor stand.",
+    "category": "Electronics",
+    "location": "Tashkent",
+    "condition": "Good",
+    "price": 0,
+    "createdAt": "2026-09-30T11:57:32.249Z",
+    "updatedAt": "2026-09-30T11:57:32.249Z"
+  },
+  {
+    "_id": "6abcf92ce18dda36c1f14066",
+    "title": "Floor Rug",
+    "description": "Medium-size rug.",
+    "category": "Home",
+    "location": "Bukhara",
+    "condition": "Used",
+    "price": 0,
+    "createdAt": "2026-09-30T11:57:32.249Z",
+    "updatedAt": "2026-09-30T11:57:32.249Z"
+  },
+  {
+    "_id": "6abcf92ce18dda36c1f14067",
+    "title": "Plant Pot",
+    "description": "Ceramic plant pot.",
+    "category": "Home",
+    "location": "Tashkent",
+    "condition": "Good",
+    "price": 0,
+    "createdAt": "2026-09-30T11:57:32.249Z",
+    "updatedAt": "2026-09-30T11:57:32.249Z"
+  },
+  {
+    "_id": "6abcf92ce18dda36c1f14068",
+    "title": "Camping Tent",
+    "description": "Two-person camping tent.",
+    "category": "Outdoor",
+    "location": "Samarkand",
+    "condition": "Used",
+    "price": 0,
+    "createdAt": "2026-09-30T11:57:32.249Z",
+    "updatedAt": "2026-09-30T11:57:32.249Z"
+  },
+  {
+    "_id": "6abcf92ce18dda36c1f14069",
+    "title": "Children Books",
+    "description": "Collection of children's books.",
+    "category": "Books",
+    "location": "Tashkent",
+    "condition": "Good",
+    "price": 0,
+    "createdAt": "2026-09-30T11:57:32.249Z",
+    "updatedAt": "2026-09-30T11:57:32.249Z"
+  },
+  {
+    "_id": "6abcf92ce18dda36c1f1406a",
+    "title": "Office Keyboard",
+    "description": "USB keyboard.",
+    "category": "Electronics",
+    "location": "Tashkent",
+    "condition": "Good",
+    "price": 0,
+    "createdAt": "2026-09-30T11:57:32.249Z",
+    "updatedAt": "2026-09-30T11:57:32.249Z"
+  },
+  {
+    "_id": "6abcf92ce18dda36c1f1406b",
+    "title": "Storage Box",
+    "description": "Plastic storage box.",
+    "category": "Home",
+    "location": "Bukhara",
+    "condition": "Good",
+    "price": 0,
+    "createdAt": "2026-09-30T11:57:32.249Z",
+    "updatedAt": "2026-09-30T11:57:32.249Z"
+  },
+  {
+    "_id": "6abcf92ce18dda36c1f1406c",
+    "title": "Bicycle Helmet",
+    "description": "Adult bicycle helmet.",
+    "category": "Outdoor",
+    "location": "Tashkent",
+    "condition": "Good",
+    "price": 0,
+    "createdAt": "2026-09-30T11:57:32.249Z",
+    "updatedAt": "2026-09-30T11:57:32.249Z"
+  }
+]
+
+```

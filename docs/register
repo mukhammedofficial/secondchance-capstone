@@ -1,11 +1,27 @@
-# Registration API evidence
+# Task 12 — Successful registration
 
-Command:
+The request used a unique, temporary email and a generated test-only password. The password value is intentionally not stored.
+
+Actual cURL request:
 
 ```sh
-curl -sS -X POST http://localhost:3000/api/secondchance/auth/register \
+curl -fsS -X POST "$BASE_URL/api/secondchance/auth/register" \
   -H 'Content-Type: application/json' \
-  -d '{"name":"Test User","email":"test@example.com","password":"Password123!"}'
+  -d "$(jq -nc --arg name 'Coursera Test User' --arg email "$TEST_EMAIL" --arg password "$TEST_PASSWORD" '{name:$name,email:$email,password:$password}')"
 ```
 
-Actual response: **PENDING — run once against the configured MongoDB and paste the real response.**
+Actual response:
+
+```json
+{
+  "message": "User registered successfully",
+  "user": {
+    "name": "Coursera Test User",
+    "email": "coursera-36711659173-1@example.invalid",
+    "createdAt": "2026-09-30T11:57:33.447Z",
+    "updatedAt": "2026-09-30T11:57:33.447Z",
+    "_id": "6abcf92de163a928de55520c"
+  }
+}
+
+```
