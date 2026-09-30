@@ -1,5 +1,18 @@
-# GitHub Actions evidence
+# GitHub Actions CICD evidence
 
-Workflow: `.github/workflows/cicd.yml` (workflow name: CICD).
+- Workflow: [`CICD`](https://github.com/mukhammedofficial/secondchance-capstone/actions/workflows/cicd.yml)
+- Successful run: [Run 3 on `main`](https://github.com/mukhammedofficial/secondchance-capstone/actions/runs/36707761258)
+- Commit tested: `cc6915cb3675c35b869b82a3bd284e239c413a6d`
+- Job: `test-and-seed` — **success**
 
-Actual run: **PENDING — after pushing, open GitHub Actions, select the latest run for `main`, and paste its URL and successful job result here.** This file does not claim an Actions run has succeeded.
+Verified in the actual GitHub Actions job log:
+
+```text
+# tests 7
+# pass 7
+# fail 0
+# skipped 0
+inserted_items: 16
+```
+
+Checkout, Node.js setup, `npm ci`, the MongoDB-backed API integration test, the 16-item seed step, and Docker image build all completed successfully. This is CI evidence from the temporary MongoDB service used by that workflow run; it is not a persistent deployment or a screenshot of a deployed site.

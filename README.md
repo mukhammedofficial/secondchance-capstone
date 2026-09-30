@@ -25,7 +25,7 @@ Uploaded images must be JPEG, PNG, WebP, or GIF and are limited to 5 MB. The app
 
 ## Quality checks
 
-`npm test` exercises the health route, landing page, request validation, and seed data. Full database-backed route checks and the seed script require MongoDB; CI starts MongoDB and runs both. No external deployment or live database result is claimed in this repository.
+`npm test` exercises the health route, landing page, request validation, and seed data. The local database-free test subset skips MongoDB integration tests when `MONGODB_URI` is unset. GitHub Actions starts MongoDB and has a verified successful run covering integration tests, the 16-item seed, and Docker build: https://github.com/mukhammedofficial/secondchance-capstone/actions/runs/36707761258. The CI database is temporary; no production deployment is claimed.
 
 ## Evidence
 
