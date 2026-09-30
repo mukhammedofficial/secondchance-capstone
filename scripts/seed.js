@@ -29,6 +29,7 @@ async function seed() {
     const total = await collection.countDocuments({});
     if (result.insertedCount !== 16 || total !== 16) throw new Error(`Expected exactly 16 stored items; inserted=${result.insertedCount}, total=${total}`);
     console.log(`inserted_items: ${result.insertedCount}`);
+    console.log(`items_collection_count: ${total}`);
     return result.insertedCount;
   } finally {
     await closeDatabase();
