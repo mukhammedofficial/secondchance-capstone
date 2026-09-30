@@ -1,0 +1,18 @@
+# Task 3 — MongoDB seed evidence
+
+Source: [GitHub Actions run 5](https://github.com/mukhammedofficial/secondchance-capstone/actions/runs/36709845196)
+Commit tested: `80acf13f746fb14efc9083832484ac131598065d`
+
+The job started its MongoDB 7 service and ran `npm run seed` with `MONGODB_DB=secondchance_ci`. The seed script clears the demo `items` collection, inserts the 16-item dataset, then queries MongoDB with `countDocuments({})` and fails unless both the inserted and stored counts equal 16.
+
+Captured output from the successful GitHub Actions job log:
+
+```text
+> secondchance-capstone@1.0.0 seed
+> node scripts/seed.js
+
+inserted_items: 16
+items_collection_count: 16
+```
+
+The test job also reported 7 passing tests, 0 failures, and 0 skipped tests. The MongoDB service was temporary to this CI run; this evidence records that run and does not claim a persistent local or hosted database.
