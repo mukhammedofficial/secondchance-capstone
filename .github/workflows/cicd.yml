@@ -134,7 +134,7 @@ jobs:
           jq . /tmp/login-redacted.json >> /tmp/login.md
           printf '\n```\n' >> /tmp/login.md
 
-          cat > /tmp/item_detail.md <<EOF
+          cat > /tmp/item_detail.md <<'EOF'
           # Task 14 — Item detail
 
           The item ID below was read from the actual mainpage API response for this run.
